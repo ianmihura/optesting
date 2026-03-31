@@ -3,7 +3,7 @@ from datetime import date
 from data_manager import DataManager
 from data_source import DoltOptionDataSource, YFStockDataSource, YFCalendarDataSource
 from world import World
-from backtesting import Strategy, Prefetch, Cleanup
+from optesting import Strategy, Prefetch, Cleanup
 
 import logging
 

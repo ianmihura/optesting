@@ -22,6 +22,7 @@ class SimpleIronCondorEarningsStrategy(BaseStrategy):
        - Buys protective wings two strikes further OTM.
        - Targets the nearest available expiration.
     """
+
     tickers = ["TSLA", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA", "META"]
 
     def compute_action(self, observation: ObservationProxy) -> pd.DataFrame:

@@ -8,7 +8,7 @@ Under the hood, the simulation rolls forward day-by-day using classes in `world.
 
 ## Configuration & Setup
 
-All strategy frontend configs live inside `backtesting.py`. Update these class handles with overrides corresponding properly inside respective handlers:
+All strategy frontend configs live inside `optesting.py`. Update these class handles with overrides corresponding properly inside respective handlers:
 
 * **Strategy** (Required):  
   The Core runner logic definition file handler. Overwrite on sub-inheriting `BaseStrategy` with override definition on method hooks layout `.compute_action(observation)`.
