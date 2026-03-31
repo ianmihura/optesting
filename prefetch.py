@@ -2,7 +2,7 @@ import abc
 from datetime import date, timedelta
 from typing import List
 
-from observation import DataManager
+from data_manager import DataManager
 
 
 class BasePrefetchStrategy(abc.ABC):

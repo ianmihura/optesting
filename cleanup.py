@@ -1,7 +1,7 @@
 import abc
 from datetime import date, timedelta
 
-from observation import DataManager
+from data_manager import DataManager
 
 
 class BaseCleanupStrategy(abc.ABC):

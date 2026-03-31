@@ -4,7 +4,7 @@ from typing import Optional
 
 
 from data_source import DataSource, YFCalendarDataSource
-from observation import DataManager, ObservationProxy
+from data_manager import DataManager, ObservationProxy
 from world import World
 from strategy import BaseStrategy
 

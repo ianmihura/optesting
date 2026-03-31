@@ -1,6 +1,6 @@
 from datetime import date
 
-from observation import DataManager
+from data_manager import DataManager
 from data_source import DoltOptionDataSource, YFStockDataSource, YFCalendarDataSource
 from world import World
 from backtesting import Strategy, Prefetch, Cleanup

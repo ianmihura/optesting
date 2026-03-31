@@ -4,9 +4,8 @@ import yfinance as yf
 import pandas as pd
 from unittest.mock import MagicMock, patch
 
-
 from world import Portfolio, World
-from observation import DataManager
+from data_manager import DataManager
 from data_source import DoltOptionDataSource, YFStockDataSource
 
 

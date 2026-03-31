@@ -1,7 +1,7 @@
 from datetime import date, timedelta
 import pandas as pd
 
-from observation import DataManager, ObservationProxy
+from data_manager import DataManager, ObservationProxy
 from reporting import PerformanceTracker
 
 
