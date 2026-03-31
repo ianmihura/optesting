@@ -23,7 +23,9 @@ class SimplePrefetchStrategy(BasePrefetchStrategy):
                 data_manager.stock_source.get_data(
                     start=start_date, end=end_date, ticker=ticker
                 )
-            data_manager.calendar_source.get_data(start=start_date, end=end_date)
+            data_manager.get_data_from_source(
+                "calendar_source", start=start_date, end=end_date
+            )
 
         # 2. Options sliding window prefetch
         # won't prefetch until we're 1 week away
@@ -45,7 +47,7 @@ class SimplePrefetchStrategy(BasePrefetchStrategy):
 class EarningsPrefetchStrategy(BasePrefetchStrategy):
     """
     Prefetches the earnings calendar first for the entire backtest range,
-    and derives the tickers list dynamically from the calendar rather than static inputs.
+    and derives the tickers list dynamically from the calendar.
     """
 
     def __init__(self, prefetch_days: int = 30):
@@ -64,8 +66,8 @@ class EarningsPrefetchStrategy(BasePrefetchStrategy):
 
         # 1. First prefetch: Pull ALL Calendar into cache and derive tickers
         if self.last_prefetch_date is None:
-            df_earnings = data_manager.calendar_source.get_data(
-                start=start_date, end=end_date
+            df_earnings = data_manager.get_data_from_source(
+                "calendar_source", start=start_date, end=end_date
             )
             if not df_earnings.empty:
                 # Assuming Index contains ticker symbol as seen in verify_framework or outputs

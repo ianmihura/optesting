@@ -1,6 +1,9 @@
+from data_source import DataSource
+from typing import Dict
 from strategies.basic_ecall import SimpleIronCondorEarningsStrategy
 from examples.prefetch import EarningsPrefetchStrategy
 from examples.cleanup import OptionCleanupStrategy
+from examples.data_sources import YFCalendarDataSource
 
 """
 Frontend for users to define their strategies.
@@ -19,3 +22,7 @@ class Prefetch(EarningsPrefetchStrategy):
 
 class Cleanup(OptionCleanupStrategy):
     pass
+
+
+def OtherSources() -> Dict[str, DataSource]:
+    return {"calendar_source": YFCalendarDataSource()}

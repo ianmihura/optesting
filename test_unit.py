@@ -7,6 +7,7 @@ from unittest.mock import MagicMock, patch
 from world import Portfolio, World
 from data_manager import DataManager
 from data_source import DoltOptionDataSource, YFStockDataSource
+from examples.data_sources import YFCalendarDataSource
 
 
 class TestPortfolio(unittest.TestCase):
@@ -200,9 +201,6 @@ class TestDataSources(unittest.TestCase):
         """Test local frame cached requests avoids continuous hits to get_earnings_calendar."""
         mock_instance = MagicMock()
         mock_calendars_class.return_value = mock_instance
-
-        # In test_framework imports from data_source already made
-        from data_source import YFCalendarDataSource
 
         source = YFCalendarDataSource()
         df = pd.DataFrame(

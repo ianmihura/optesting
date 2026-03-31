@@ -3,7 +3,8 @@ import pandas as pd
 from typing import Optional
 
 
-from data_source import DataSource, YFCalendarDataSource
+from data_source import DataSource
+from examples.data_sources import YFCalendarDataSource
 from data_manager import DataManager
 from observation import ObservationProxy
 from world import World
@@ -107,7 +108,9 @@ class TestFrameworkIntegration(unittest.TestCase):
         option_source = MockOptionDataSource()
         stock_source = MockStockDataSource()
         calendar_source = YFCalendarDataSource()
-        data_manager = DataManager(option_source, stock_source, calendar_source)
+        data_manager = DataManager(
+            option_source, stock_source, {"calendar_source": calendar_source}
+        )
 
         # 2. Setup World
         start_date = date(2026, 3, 20)

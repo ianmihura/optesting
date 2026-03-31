@@ -1,9 +1,9 @@
 from datetime import date
 
 from data_manager import DataManager
-from data_source import DoltOptionDataSource, YFStockDataSource, YFCalendarDataSource
+from data_source import DoltOptionDataSource, YFStockDataSource
 from world import World
-from optesting import Strategy, Prefetch, Cleanup
+from optesting import Strategy, Prefetch, Cleanup, OtherSources
 
 import logging
 
@@ -16,18 +16,16 @@ def run_strategy(
 ):
     option_source = DoltOptionDataSource()
     stock_source = YFStockDataSource()
-    calendar_source = YFCalendarDataSource()
-
-    prefetch_strategy = Prefetch()
-    cleanup_strategy = Cleanup()
-
-    data_manager = DataManager(option_source, stock_source, calendar_source)
+    other_sources = OtherSources()
+    data_manager = DataManager(option_source, stock_source, other_sources)
     world = World(start_date, end_date, data_manager)
 
     strategy = Strategy()
     tickers = getattr(strategy, "tickers", [])
 
     logger.info(f"Prefetching for strategy from {start_date} -> {end_date}")
+    prefetch_strategy = Prefetch()
+    cleanup_strategy = Cleanup()
     if prefetch_strategy:
         prefetch_strategy.prefetch(
             data_manager, world.current_date, world.end_date, tickers
