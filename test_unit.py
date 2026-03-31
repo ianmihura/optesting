@@ -149,7 +149,7 @@ class TestDataSources(unittest.TestCase):
         mock_run.return_value = MagicMock(stdout=mock_output, returncode=0)
 
         source = DoltOptionDataSource()
-        chain = source.get_chain("A", date(2019, 2, 9))
+        chain = source.get_data(start=date(2019, 2, 9), ticker="A")
         self.assertTrue(isinstance(chain, pd.DataFrame))
 
         # 2. Verify parsed dimensions
@@ -177,12 +177,16 @@ class TestDataSources(unittest.TestCase):
         mock_ph.history.return_value = mock_df_initial
 
         # 1. First request -> triggers Miss and pulls Mock DF
-        res1 = source.get_stock_price("AAPL", date(2026, 3, 20), date(2026, 3, 24))
+        res1 = source.get_data(
+            start=date(2026, 3, 20), end=date(2026, 3, 24), ticker="AAPL"
+        )
         self.assertFalse(source._cache.empty)
         self.assertEqual(mock_ph.history.call_count, 1)
 
         # 2. Second request (fully within cache range) -> triggering no request hits
-        res2 = source.get_stock_price("AAPL", date(2026, 3, 21), date(2026, 3, 23))
+        res2 = source.get_data(
+            start=date(2026, 3, 21), end=date(2026, 3, 23), ticker="AAPL"
+        )
         self.assertEqual(mock_ph.history.call_count, 1)
         self.assertEqual(res2.shape[0], 3)
 
@@ -206,12 +210,12 @@ class TestDataSources(unittest.TestCase):
         end = date(2026, 3, 25)
 
         # 1. First fetch -> Cache Miss
-        res1 = source.get_earnings(start, end)
+        res1 = source.get_data(start=start, end=end)
         self.assertEqual(mock_instance.get_earnings_calendar.call_count, 1)
         self.assertFalse(source._cache.empty)
 
         # 2. Second fetch (within interval bounds) -> Cache Hit
-        res2 = source.get_earnings(date(2026, 3, 22), date(2026, 3, 23))
+        res2 = source.get_data(start=date(2026, 3, 22), end=date(2026, 3, 23))
         self.assertEqual(
             mock_instance.get_earnings_calendar.call_count, 1
         )  # call_count preserved
@@ -223,7 +227,7 @@ class TestIntegrationDataSources(unittest.TestCase):
     def test_dolt_reachability(self):
         """Test real-world reachability and parsing of Dolt OptionDataSource."""
         source = DoltOptionDataSource()
-        chain = source.get_chain("A", date(2019, 2, 9))
+        chain = source.get_data(start=date(2019, 2, 9), ticker="A")
         self.assertTrue(isinstance(chain, pd.DataFrame))
 
     def test_yf_reachability(self):
@@ -232,7 +236,7 @@ class TestIntegrationDataSources(unittest.TestCase):
         # Use days backwards since today might be a weekend
         start = date(2026, 3, 10)
         end = date(2026, 3, 15)
-        df = source.get_stock_price("AAPL", start, end)
+        df = source.get_data(start=start, end=end, ticker="AAPL")
         self.assertTrue(isinstance(df, pd.DataFrame))
 
 

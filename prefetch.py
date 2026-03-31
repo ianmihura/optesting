@@ -35,8 +35,10 @@ class SimplePrefetchStrategy(BasePrefetchStrategy):
         # 1. Always Prefetch ALL stock and calendar data from start to end
         if self.last_prefetch_date is None:  # will only prefetch on first hit
             for ticker in tickers:
-                data_manager.stock_source.get_stock_price(ticker, start_date, end_date)
-            data_manager.calendar_source.get_earnings(start_date, end_date)
+                data_manager.stock_source.get_data(
+                    start=start_date, end=end_date, ticker=ticker
+                )
+            data_manager.calendar_source.get_data(start=start_date, end=end_date)
 
         # 2. Options sliding window prefetch
         # won't prefetch until we're 1 week away
@@ -49,7 +51,9 @@ class SimplePrefetchStrategy(BasePrefetchStrategy):
                 start_date + timedelta(days=self.prefetch_days), end_date
             )
             for ticker in tickers:
-                data_manager.option_source.get_chain(ticker, start_date, prefetch_until)
+                data_manager.option_source.get_data(
+                    start=start_date, end=prefetch_until, ticker=ticker
+                )
             self.last_prefetch_date = prefetch_until
 
 
@@ -75,20 +79,22 @@ class EarningsPrefetchStrategy(BasePrefetchStrategy):
 
         # 1. First prefetch: Pull ALL Calendar into cache and derive tickers
         if self.last_prefetch_date is None:
-            df_earnings = data_manager.calendar_source.get_earnings(
-                start_date, end_date
+            df_earnings = data_manager.calendar_source.get_data(
+                start=start_date, end=end_date
             )
             if not df_earnings.empty:
                 # Assuming Index contains ticker symbol as seen in verify_framework or outputs
                 self.tickers = df_earnings.index.unique().tolist()
 
             for ticker in self.tickers:
-                data_manager.stock_source.get_stock_price(ticker, start_date, end_date)
+                data_manager.stock_source.get_data(
+                    start=start_date, end=end_date, ticker=ticker
+                )
             data_manager.stock_source._price_history_cache = {}
 
         # 2. Options prefetch: Fetch only current and next day
         # prefetch_until = min(start_date + timedelta(days=1), end_date)
         # for ticker in self.tickers:
-        #     data_manager.option_source.get_chain(ticker, start_date, prefetch_until)
+        #     data_manager.option_source.get_data(start=start_date, end=prefetch_until, ticker=ticker)
 
         self.last_prefetch_date = start_date

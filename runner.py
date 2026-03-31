@@ -3,7 +3,6 @@ from datetime import date
 from observation import DataManager
 from data_source import DoltOptionDataSource, YFStockDataSource, YFCalendarDataSource
 from world import World
-from reporting import PerformanceTracker
 from backtesting import Strategy, Prefetch, Cleanup
 
 import logging
@@ -23,8 +22,7 @@ def run_strategy(
     cleanup_strategy = Cleanup()
 
     data_manager = DataManager(option_source, stock_source, calendar_source)
-    tracker = PerformanceTracker()
-    world = World(start_date, end_date, data_manager, tracker)
+    world = World(start_date, end_date, data_manager)
 
     strategy = Strategy()
     tickers = getattr(strategy, "tickers", [])
@@ -45,7 +43,7 @@ def run_strategy(
         world.execute_action(orders)
         world.step()
 
-    logger.info(f"\n{tracker.generate_report()}")
+    logger.info(f"\n{world.tracker.generate_report()}")
     if not world.portfolio.positions.empty:
         logger.info("Remaining Positions:")
         for idx, pos in world.portfolio.positions.iterrows():

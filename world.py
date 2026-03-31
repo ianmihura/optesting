@@ -18,7 +18,6 @@ class World:
         start_date: date,
         end_date: date,
         data_manager: DataManager,
-        tracker: PerformanceTracker = None,
         initial_cash: float = 100_000.00,
     ):
         self.current_date: date = start_date
@@ -26,8 +25,8 @@ class World:
         self.data_manager: DataManager = data_manager
         self.portfolio: Portfolio = Portfolio(initial_cash)
         self.done: bool = False
-        self.tracker = tracker
-        self.observation = ObservationProxy(
+        self.tracker: PerformanceTracker = PerformanceTracker()
+        self.observation: ObservationProxy = ObservationProxy(
             self.data_manager, self.current_date, self.portfolio
         )
 

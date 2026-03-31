@@ -1,8 +1,9 @@
 from datetime import date, timedelta
 import pandas as pd
+from typing import Optional
 
 
-from data_source import StockDataSource, YFCalendarDataSource, OptionDataSource
+from data_source import DataSource, YFCalendarDataSource
 from observation import DataManager, ObservationProxy
 from world import World
 from strategy import BaseStrategy
@@ -12,7 +13,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class MockOptionDataSource(OptionDataSource):
+class MockOptionDataSource(DataSource):
     """
     Generates mock option data for testing.
     """
@@ -20,7 +21,10 @@ class MockOptionDataSource(OptionDataSource):
     def clear_cache(self, before_date=None):
         pass
 
-    def get_chain(self, ticker: str, query_date: date) -> pd.DataFrame:
+    def get_data(
+        self, start: date, end: Optional[date] = None, ticker: str = ""
+    ) -> pd.DataFrame:
+        query_date = start
         rows = []
         exp = query_date + timedelta(days=7)
         for strike in [100.0, 105.0]:
@@ -45,7 +49,7 @@ class MockOptionDataSource(OptionDataSource):
         return pd.DataFrame(rows)
 
 
-class MockStockDataSource(StockDataSource):
+class MockStockDataSource(DataSource):
     """
     Mock stock prices for testing without hitting network.
     """
@@ -53,17 +57,14 @@ class MockStockDataSource(StockDataSource):
     def clear_cache(self, before_date=None):
         pass
 
-    def get_stock_price(
-        self, ticker: str, start: date = None, end: date = None
+    def get_data(
+        self, start: date, end: Optional[date] = None, ticker: str = ""
     ) -> pd.DataFrame:
         d = start or date(2026, 3, 20)
         idx = pd.date_range(d, periods=1)
         return pd.DataFrame(
             {"Ticker": [ticker], "Close": [102.0], "Volume": [1000]}, index=idx
         )
-
-    def get_earnings(self, start: date = None, end: date = None) -> pd.DataFrame:
-        return pd.DataFrame({"Earnings Date": [date(2026, 3, 25)]})
 
 
 class SimpleStrategy(BaseStrategy):
@@ -111,7 +112,11 @@ class TestFrameworkIntegration(unittest.TestCase):
         start_date = date(2026, 3, 20)
         end_date = date(2026, 3, 27)  # 7 days simulation
         tracker = PerformanceTracker()
-        world = World(start_date, end_date, data_manager, tracker, initial_cash=10000.0)
+        world = World(
+            start_date, end_date, data_manager
+        )  # initial_cash is 100k by default now, but let me check world.__init__
+        world.portfolio.cash = 10000.0  # reset to match test expectations if needed
+        world.tracker = tracker  # Inject tracker if not already there (it is initialized in World.__init__)
 
         strategy = SimpleStrategy()
 

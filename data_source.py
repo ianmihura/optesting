@@ -11,17 +11,25 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class OptionDataSource(abc.ABC):
+class DataSource(abc.ABC):
     """
-    Abstract Base Class for option data sources.
+    Abstract Base Class for all data sources.
     """
 
     @abc.abstractmethod
-    def get_chain(
-        self, ticker: str, start: date, end: Optional[date] = None
+    def get_data(
+        self,
+        start: date,
+        end: Optional[date] = None,
+        ticker: str = "",
     ) -> pd.DataFrame:
         """
-        Fetch option chain for a specific ticker on a specific date or range.
+        Fetch data for a specific date or range.
+
+        - If no `end` date is provided, will return data only on start date.
+        - If `end` date is provided, will return the range
+        - Optionally filter results by `ticker`
+
         Returns a DataFrame.
         """
         pass
@@ -29,12 +37,15 @@ class OptionDataSource(abc.ABC):
     @abc.abstractmethod
     def clear_cache(self, before_date: Optional[date] = None):
         """
-        Manually evict cache. If before_date is provided, evict cache older than that date.
+        Manually evict cache.
+
+        - If `before_date` is provided, evict cache older than that date.
+        - Otherwise, will evict all cache.
         """
         pass
 
 
-class DoltOptionDataSource(OptionDataSource):
+class DoltOptionDataSource(DataSource):
     """
     Fetches option data from local Dolt binary via subprocess, querying `option_chain`.
     """
@@ -71,16 +82,23 @@ class DoltOptionDataSource(OptionDataSource):
             if not self._cache.empty:
                 self._cache = self._cache[self._cache["date"] >= before_date]
 
-            for ticker, dates in dict(self._fetched_dates).items():
-                self._fetched_dates[ticker] = {d for d in dates if d >= before_date}
+            for ticker_key, dates in dict(self._fetched_dates).items():
+                self._fetched_dates[ticker_key] = {d for d in dates if d >= before_date}
 
-    def get_chain(
-        self, ticker: str, start: date, end: Optional[date] = None
+    def get_data(
+        self,
+        start: date,
+        end: Optional[date] = None,
+        ticker: str = "",
     ) -> pd.DataFrame:
         """
         Fetch option chain for a specific ticker for a single date or range of dates.
         Uses an in-memory DataFrame cache to avoid repeated Dolt subprocess calls.
         """
+        if not ticker:
+            logger.warning("ticker is required for DoltOptionDataSource.get_data")
+            return pd.DataFrame(columns=self.columns)
+
         if end is None:
             query_date = start
             if query_date.weekday() == 4:  # Friday
@@ -162,29 +180,7 @@ class DoltOptionDataSource(OptionDataSource):
         return self._cache[mask].copy()
 
 
-class StockDataSource(abc.ABC):
-    """
-    Abstract Base Class for stock data sources.
-    """
-
-    @abc.abstractmethod
-    def get_stock_price(
-        self, ticker: str, start: Optional[date] = None, end: Optional[date] = None
-    ) -> pd.DataFrame:
-        """
-        Fetch stock price (close) for a date range.
-        """
-        pass
-
-    @abc.abstractmethod
-    def clear_cache(self, before_date: Optional[date] = None):
-        """
-        Manually evict cache.
-        """
-        pass
-
-
-class YFStockDataSource(StockDataSource):
+class YFStockDataSource(DataSource):
     """
     Fetches stock prices using `yfinance`.
     """
@@ -215,12 +211,19 @@ class YFStockDataSource(StockDataSource):
                 if self._min_date[t] < before_date:
                     self._min_date[t] = before_date
 
-    def get_stock_price(
-        self, ticker: str, start: Optional[date] = None, end: Optional[date] = None
+    def get_data(
+        self,
+        start: date,
+        end: Optional[date] = None,
+        ticker: str = "",
     ) -> pd.DataFrame:
         """
         Fetch stock price (close) for a date range, using the unified cache DataFrame.
         """
+        if not ticker:
+            logger.warning("ticker is required for YFStockDataSource.get_data")
+            return pd.DataFrame(columns=self._cache.columns)
+
         if start is None:
             start = date.today() - timedelta(days=30)
         if end is None:
@@ -292,23 +295,7 @@ class YFStockDataSource(StockDataSource):
         )
 
 
-class CalendarDataSource(abc.ABC):
-    """
-    Abstract Base Class for calendar data sources.
-    """
-
-    @abc.abstractmethod
-    def get_earnings(
-        self, start: Optional[date] = None, end: Optional[date] = None
-    ) -> pd.DataFrame:
-        pass
-
-    @abc.abstractmethod
-    def clear_cache(self, before_date: Optional[date] = None):
-        pass
-
-
-class YFCalendarDataSource(CalendarDataSource):
+class YFCalendarDataSource(DataSource):
     """
     Fetches earnings calendars using `yfinance`.
     """
@@ -338,8 +325,11 @@ class YFCalendarDataSource(CalendarDataSource):
                 if self._min_date and self._min_date < before_date:
                     self._min_date = before_date
 
-    def get_earnings(
-        self, start: Optional[date] = None, end: Optional[date] = None
+    def get_data(
+        self,
+        start: date,
+        end: Optional[date] = None,
+        ticker: str = "",
     ) -> pd.DataFrame:
         """
         Fetch earnings calendar for a date range, using dynamic continuous merges.
@@ -360,10 +350,16 @@ class YFCalendarDataSource(CalendarDataSource):
                     None,
                 )
                 if date_col:
-                    return self._cache[
-                        (pd.to_datetime(self._cache[date_col]).dt.date >= start)
-                        & (pd.to_datetime(self._cache[date_col]).dt.date <= end)
-                    ]
+                    mask = (pd.to_datetime(self._cache[date_col]).dt.date >= start) & (
+                        pd.to_datetime(self._cache[date_col]).dt.date <= end
+                    )
+                    if ticker:
+                        # Assuming symbol is in index or column
+                        if ticker in self._cache.index:
+                            return self._cache[(self._cache.index == ticker) & mask]
+                        elif "Symbol" in self._cache.columns:
+                            return self._cache[(self._cache["Symbol"] == ticker) & mask]
+                    return self._cache[mask]
 
         # 2. Cache Miss: Fetch
         try:
@@ -389,9 +385,14 @@ class YFCalendarDataSource(CalendarDataSource):
 
         date_col = next((c for c in self._cache.columns if "date" in c.lower()), None)
         if date_col:
-            return self._cache[
-                (pd.to_datetime(self._cache[date_col]).dt.date >= start)
-                & (pd.to_datetime(self._cache[date_col]).dt.date <= end)
-            ]
+            mask = (pd.to_datetime(self._cache[date_col]).dt.date >= start) & (
+                pd.to_datetime(self._cache[date_col]).dt.date <= end
+            )
+            if ticker:
+                if ticker in self._cache.index:
+                    return self._cache[(self._cache.index == ticker) & mask]
+                elif "Symbol" in self._cache.columns:
+                    return self._cache[(self._cache["Symbol"] == ticker) & mask]
+            return self._cache[mask]
 
         return self._cache
