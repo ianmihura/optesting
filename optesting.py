@@ -1,7 +1,6 @@
 from strategies.basic_ecall import SimpleIronCondorEarningsStrategy
-from strategies.earnings_call import FullEarningsStrategy
-from prefetch import EarningsPrefetchStrategy
-from cleanup import OptionCleanupStrategy
+from examples.prefetch import EarningsPrefetchStrategy
+from examples.cleanup import OptionCleanupStrategy
 
 """
 Frontend for users to define their strategies.

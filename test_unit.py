@@ -170,7 +170,13 @@ class TestDataSources(unittest.TestCase):
 
         df_index = pd.date_range("2026-03-20", periods=5)
         mock_df_initial = pd.DataFrame(
-            {"Close": [100.0, 101.0, 102.0, 103.0, 104.0], "Volume": [1000] * 5},
+            {
+                "Open": [99.0, 100.0, 101.0, 102.0, 103.0],
+                "High": [101.0, 102.0, 103.0, 104.0, 105.0],
+                "Low": [98.0, 99.0, 100.0, 101.0, 102.0],
+                "Close": [100.0, 101.0, 102.0, 103.0, 104.0],
+                "Volume": [1000] * 5,
+            },
             index=df_index,
         )
         mock_ph.history.return_value = mock_df_initial
