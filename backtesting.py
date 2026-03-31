@@ -10,7 +10,7 @@ Optionally define Prefetch and Cleanup cache strategies (for faster tests).
 """
 
 
-class Strategy(FullEarningsStrategy):
+class Strategy(SimpleIronCondorEarningsStrategy):
     pass
 
 

@@ -41,7 +41,7 @@ class DoltOptionDataSource(OptionDataSource):
 
     def __init__(
         self,
-        cwd: str = "/home/ian/repos/trade-calculator/backtesting",
+        cwd: str = "/home/ian/repos/trade-calculator/optesting",
         greeks: List[str] = None,
     ):
         self.cwd = cwd
