@@ -46,7 +46,9 @@ class SimpleIronCondorEarningsStrategy(BaseStrategy):
 
         # 2. Inspect earnings calendar for the NEXT day
         tomorrow = observation.current_date + timedelta(days=1)
-        df_earnings = observation.get_earnings(start=tomorrow, end=tomorrow)
+        df_earnings = observation.get_data_from_source_lookahead(
+            "calendar_source", start=tomorrow, end=tomorrow
+        )
 
         if not df_earnings.empty:
             for ticker in self.tickers:
