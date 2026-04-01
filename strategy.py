@@ -1,3 +1,4 @@
+from typing import Optional, List
 import pandas as pd
 import abc
 
@@ -8,6 +9,9 @@ class BaseStrategy(abc.ABC):
     """
     Base class for implementing trading strategies.
     """
+
+    tickers: Optional[List] = []
+    """Optionally define a list of tickers to trade"""
 
     @abc.abstractmethod
     def compute_action(self, observation: ObservationProxy) -> pd.DataFrame:

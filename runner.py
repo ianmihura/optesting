@@ -1,4 +1,4 @@
-from typing import Optional, Callable, Dict
+from typing import Dict
 from datetime import date
 
 from data_manager import DataManager
@@ -31,10 +31,10 @@ def RunStrategy(
     world = World(start_date, end_date, data_manager)
 
     strategy = Strategy()
-    tickers = getattr(strategy, "tickers", [])  # TODO needed?
 
     if Prefetch:
         logger.info(f"Prefetching for strategy from {start_date} -> {end_date}")
+        tickers = getattr(strategy, "tickers", [])
         Prefetch(data_manager, world.current_date, world.end_date, tickers)
 
     logger.info(f"Starting Backtest from {start_date} -> {end_date}")
