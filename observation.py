@@ -57,10 +57,17 @@ class ObservationProxy:
             )
         return self._data_manager.get_stock_price(ticker, start, end)
 
-    def get_earnings(
-        self, start: Optional[date] = None, end: Optional[date] = None
+    def get_data_from_source(
+        self, source_name: str, start: Optional[date], end: Optional[date]
     ) -> pd.DataFrame:
-        """
-        Get all upcoming earnings calendar/expectations.
-        """
-        return self._data_manager.get_earnings(start, end)
+        if end > self.current_date:
+            raise ValueError(
+                f"Look-ahead! Cannot query {source_name} range ending {end} from {self.current_date}"
+            )
+        return self._data_manager.get_data_from_source(source_name, start, end)
+
+    def get_data_from_source_lookahead(
+        self, source_name: str, start: Optional[date], end: Optional[date]
+    ) -> pd.DataFrame:
+        """Allows look-ahead"""
+        return self._data_manager.get_data_from_source(source_name, start, end)
