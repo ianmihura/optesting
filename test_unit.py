@@ -6,8 +6,11 @@ from unittest.mock import MagicMock, patch
 
 from world import Portfolio, World
 from data_manager import DataManager
-from data_source import DoltOptionDataSource, YFStockDataSource
-from examples.data_sources import YFCalendarDataSource
+from examples.data_sources import (
+    DoltOptionDataSource,
+    YFStockDataSource,
+    YFCalendarDataSource,
+)
 
 
 class TestPortfolio(unittest.TestCase):

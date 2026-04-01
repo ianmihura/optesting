@@ -3,7 +3,11 @@ from typing import Dict
 from strategies.basic_ecall import SimpleIronCondorEarningsStrategy
 from examples.prefetch import EarningsPrefetchStrategy
 from examples.cleanup import OptionCleanupStrategy
-from examples.data_sources import YFCalendarDataSource
+from examples.data_sources import (
+    DoltOptionDataSource,
+    YFStockDataSource,
+    YFCalendarDataSource,
+)
 
 """
 Frontend for users to define their strategies.
@@ -21,6 +25,14 @@ class Prefetch(EarningsPrefetchStrategy):
 
 
 class Cleanup(OptionCleanupStrategy):
+    pass
+
+
+class OptionDataSource(DoltOptionDataSource):
+    pass
+
+
+class StockDataSource(YFStockDataSource):
     pass
 
 
