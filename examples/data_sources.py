@@ -18,7 +18,7 @@ class DoltOptionDataSource(DataSource):
 
     def __init__(
         self,
-        cwd: str = "/home/ian/repos/trade-calculator/optesting",
+        cwd: str = "/home/ian/repos/optesting",
         greeks: List[str] = None,
     ):
         self.cwd = cwd

@@ -86,8 +86,17 @@ class PerformanceTracker:
             ((end_val - start_val) / start_val) * 100.0 if start_val > 0 else 0
         )
 
+        start_date = df_daily["date"].min()
+        end_date = df_daily["date"].max()
+        duration = end_date - start_date
+        step_size = df_daily["date"].diff().median() if len(df_daily) > 1 else "N/A"
+
         report = (
             f"--- Backtest Performance Report ---\n"
+            f"Start Date:    {start_date}\n"
+            f"End Date:      {end_date}\n"
+            f"Duration:      {duration}\n"
+            f"Step Size:     {step_size}\n"
             f"Initial Value: ${start_val:.2f}\n"
             f"Final Value:   ${end_val:.2f}\n"
             f"Total Return:  {total_return:.2f}%\n"

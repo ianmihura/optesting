@@ -11,7 +11,7 @@ from portfolio import Portfolio
 
 class World:
     """
-    Drives the simulation/backtesting loop day by day.
+    Drives the simulation/backtesting loop by timestep.
     """
 
     def __init__(
@@ -103,7 +103,7 @@ class World:
 
     def step(self):
         """
-        Advance one day.
+        Advance one step.
         """
         if self.tracker:
             self.tracker.log_daily_value(

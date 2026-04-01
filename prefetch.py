@@ -1,20 +1,19 @@
-import abc
 from datetime import date
-from typing import List
+from typing import List, Optional
 
 from data_manager import DataManager
 
 
-class BasePrefetchStrategy(abc.ABC):
-    @abc.abstractmethod
-    def prefetch(
+class BasePrefetchStrategy(Callable):
+
+    def __call__(
         self,
         data_manager: DataManager,
         start_date: date,
         end_date: date,
-        tickers: List[str],
+        tickers: Optional[List[str]],
     ):
         """
-        Handle pre-fetching logic to populate data sources actively before day simulation.
+        Handle pre-fetching logic to populate data sources before simulation starts.
         """
         pass

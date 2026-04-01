@@ -1,5 +1,3 @@
-from data_source import DataSource
-from typing import Dict
 from strategies.basic_ecall import SimpleIronCondorEarningsStrategy
 from examples.prefetch import EarningsPrefetchStrategy
 from examples.cleanup import OptionCleanupStrategy
@@ -8,33 +6,28 @@ from examples.data_sources import (
     YFStockDataSource,
     YFCalendarDataSource,
 )
+from runner import RunStrategy
+
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 """
-Frontend for users to define their strategies.
+Frontend for users to define their strategies, 
+data sources and data management (Prefetch and Cleanup cache)
 
-Optionally define Prefetch and Cleanup cache strategies (for faster tests).
+Call RunStrategy() with all objects defined to run the strategy
 """
 
 
-class Strategy(SimpleIronCondorEarningsStrategy):
-    pass
-
-
-class Prefetch(EarningsPrefetchStrategy):
-    pass
-
-
-class Cleanup(OptionCleanupStrategy):
-    pass
-
-
-class OptionDataSource(DoltOptionDataSource):
-    pass
-
-
-class StockDataSource(YFStockDataSource):
-    pass
-
-
-def OtherSources() -> Dict[str, DataSource]:
-    return {"calendar_source": YFCalendarDataSource()}
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(message)s")
+    RunStrategy(
+        SimpleIronCondorEarningsStrategy,
+        DoltOptionDataSource,
+        YFStockDataSource,
+        {"calendar_source": YFCalendarDataSource()},
+        EarningsPrefetchStrategy,
+        OptionCleanupStrategy,
+    )
