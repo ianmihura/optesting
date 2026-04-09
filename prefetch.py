@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 from data_manager import DataManager
 
